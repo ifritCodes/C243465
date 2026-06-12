@@ -1,0 +1,74 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+vector<int> parent;
+
+int findSet(int v)
+{
+    if(parent[v] == v)
+        return v;
+
+    return parent[v] = findSet(parent[v]);
+}
+
+void unionSet(int a, int b)
+{
+    a = findSet(a);
+    b = findSet(b);
+
+    if(a != b)
+        parent[a] = b;
+}
+
+struct Edge
+{
+    int u, v, w;
+};
+
+bool cmp(Edge a, Edge b)
+{
+    if(a.w != b.w)
+        return a.w < b.w;
+
+    return (a.u + a.v + a.w) < (b.u + b.v + b.w);
+}
+
+int kruskals(int g_nodes, vector<int> g_from,
+             vector<int> g_to, vector<int> g_weight)
+{
+    vector<Edge> edges;
+
+    int m = g_from.size();
+
+    for(int i = 0; i < m; i++)
+    {
+        edges.push_back({
+            g_from[i],
+            g_to[i],
+            g_weight[i]
+        });
+    }
+
+    sort(edges.begin(), edges.end(), cmp);
+
+    parent.resize(g_nodes + 1);
+
+    for(int i = 1; i <= g_nodes; i++)
+        parent[i] = i;
+
+    int mstCost = 0;
+
+    for(auto e : edges)
+    {
+        int pu = findSet(e.u);
+        int pv = findSet(e.v);
+
+        if(pu != pv)
+        {
+            mstCost += e.w;
+            unionSet(pu, pv);
+        }
+    }
+
+    return mstCost;
+}
