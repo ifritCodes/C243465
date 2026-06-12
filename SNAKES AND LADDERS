@@ -1,0 +1,50 @@
+class Solution {
+public:
+
+    pair<int,int> getPos(int num, int n) {
+        int row = (num - 1) / n;
+        int col = (num - 1) % n;
+
+        int r = n - 1 - row;
+
+        if (row % 2 == 0) {
+            return {r, col};
+        } else {
+            return {r, n - 1 - col};
+        }
+    }
+
+    int snakesAndLadders(vector<vector<int>>& board) {
+        int n = board.size();
+
+        vector<vector<bool>> vis(n, vector<bool>(n, false));
+        queue<pair<int,int>> q; // {square, steps}
+
+        q.push({1, 0});
+        vector<bool> visited(1001, false);
+        visited[1] = true;
+
+        while (!q.empty()) {
+            auto [curr, steps] = q.front();
+            q.pop();
+
+            if (curr == n * n) return steps;
+
+            for (int dice = 1; dice <= 6; dice++) {
+                int next = curr + dice;
+                if (next > n * n) break;
+
+                auto [r, c] = getPos(next, n);
+
+                int dest = (board[r][c] == -1) ? next : board[r][c];
+
+                if (!visited[dest]) {
+                    visited[dest] = true;
+                    q.push({dest, steps + 1});
+                }
+            }
+        }
+
+        return -1;
+    }
+};
