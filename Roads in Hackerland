@@ -1,0 +1,96 @@
+#include <bits/stdc++.h>
+using namespace std;
+
+struct Edge {
+    int u, v, w;
+    bool operator<(const Edge &other) const {
+        return w < other.w;
+    }
+};
+
+struct DSU {
+    vector<int> p, sz;
+    DSU(int n) {
+        p.resize(n + 1);
+        sz.assign(n + 1, 1);
+        iota(p.begin(), p.end(), 0);
+    }
+
+    int find(int x) {
+        if (p[x] == x) return x;
+        return p[x] = find(p[x]);
+    }
+
+    bool unite(int a, int b) {
+        a = find(a);
+        b = find(b);
+        if (a == b) return false;
+        if (sz[a] < sz[b]) swap(a, b);
+        p[b] = a;
+        sz[a] += sz[b];
+        return true;
+    }
+};
+
+int n, m;
+vector<vector<pair<int,int>>> tree;
+vector<long long> cnt;
+vector<int> sub;
+
+void dfs(int u, int par) {
+    sub[u] = 1;
+    for (auto [v, w] : tree[u]) {
+        if (v == par) continue;
+        dfs(v, u);
+        long long ways = 1LL * sub[v] * (n - sub[v]);
+        cnt[w] += ways;
+        sub[u] += sub[v];
+    }
+}
+
+int main() {
+    ios::sync_with_stdio(false);
+    cin.tie(nullptr);
+
+    cin >> n >> m;
+
+    vector<Edge> edges(m);
+    int mx = 0;
+
+    for (int i = 0; i < m; i++) {
+        cin >> edges[i].u >> edges[i].v >> edges[i].w;
+        mx = max(mx, edges[i].w);
+    }
+
+    sort(edges.begin(), edges.end());
+
+    tree.assign(n + 1, {});
+    DSU dsu(n);
+
+    for (auto &e : edges) {
+        if (dsu.unite(e.u, e.v)) {
+            tree[e.u].push_back({e.v, e.w});
+            tree[e.v].push_back({e.u, e.w});
+        }
+    }
+
+    cnt.assign(mx + 70, 0);
+    sub.assign(n + 1, 0);
+
+    dfs(1, 0);
+
+    for (int i = 0; i < (int)cnt.size() - 1; i++) {
+        cnt[i + 1] += cnt[i] / 2;
+        cnt[i] %= 2;
+    }
+
+    int last = cnt.size() - 1;
+    while (last > 0 && cnt[last] == 0) last--;
+
+    for (int i = last; i >= 0; i--)
+        cout << cnt[i];
+
+    cout << '\n';
+
+    return 0;
+}
